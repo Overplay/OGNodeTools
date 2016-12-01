@@ -60,7 +60,7 @@ server.on( 'message', function ( msg, rinfo ) {
         logv("I'm hearing my own voice.");
     } else {
         var og = JSON.parse(msg);
-        console.log(("----- OG Named: "+og.name+" -----").green);
+        console.log(("----- OG Named: "+og.name+" @ "+rinfo.address).green);
         console.log((JSON.stringify(og, null, 4)).cyan);
 
     }
@@ -77,9 +77,10 @@ server.on( 'listening', function () {
 server.bind( 9091, function () {
     server.setBroadcast( true );
     sendPingFrom( getIPAddresses()[ 0 ] );
+    setTimeout( function(){ sendPingFrom( getIPAddresses()[0])}, 1000);
     setTimeout(function(){
         server.close(function(){
-            console.log("Waited 5 seconds, now I am out.".magenta);
+            console.log("Waited 10 seconds, now I am out.".magenta);
         })
-    }, 5000)
+    }, 10000)
 } );
