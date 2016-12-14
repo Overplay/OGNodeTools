@@ -21,7 +21,7 @@ function logv(msg){
 
 function sendPingFrom(ipAddress){
 
-    var pingMsg = JSON.stringify( { ip: ipAddress } );
+    var pingMsg = JSON.stringify( { ip: ipAddress, action: "discover", time: Date.now() } );
     server.send( pingMsg, 0, pingMsg.length, 9091, '255.255.255.255', function ( err ) {
         if (err){
             console.log("Error sending UDP ping!");
