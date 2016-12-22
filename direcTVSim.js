@@ -7,6 +7,7 @@
 
 var os = require( 'os' );
 var colors = require( 'colors' );
+var keypress = require('keypress');
 
 var myIp = getIPAddresses()[ 0 ];  // brittle, but whatever
 var VERBOSE = true;
@@ -101,16 +102,8 @@ httpserver.listen( PORT, function () {
 } );
 
 var channelIdx = 0;
-var lastChange = new Date().getTime();
-var changeEvery = 30;
 
 function getChannelInfo(){
-    var now = new Date().getTime();
-    if ( (now-lastChange) > (changeEvery*1000) ){
-        channelIdx = (channelIdx + 1) % channelInfo.length;
-        console.log("Changed channel".green);
-        lastChange = now;
-    }
     return channelInfo[channelIdx];
 }
 
@@ -121,3 +114,30 @@ var channelInfo = [
     { callsign: "FOX", major: 2, minor: 65535, programId: 3647953, stationId: 20255, title: "FOXy Show" }
     ];
 
+
+// make `process.stdin` begin emitting "keypress" events
+keypress(process.stdin);
+
+// listen for the "keypress" event
+process.stdin.on('keypress', function (ch, key) {
+    if (key && key.ctrl && key.name == 'c') {
+        process.exit()
+    }
+    if(key && key.name) {
+        switch (key.name) {
+            case 'up':
+                channelIdx = (channelIdx + 1) % channelInfo.length;
+                console.log('changed channel up'.green);
+                break;
+            case 'down':
+                channelIdx = (channelIdx - 1) < 0 ? channelInfo.length - 1 : channelIdx - 1;
+                console.log('changed channel down'.green);
+                break;
+            default:
+                process.stdout.write(String(key.sequence));
+        }
+    }
+});
+
+process.stdin.setRawMode(true);
+process.stdin.resume();
