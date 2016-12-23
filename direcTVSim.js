@@ -89,6 +89,51 @@ var httpserver = http.createServer( function ( request, response ) {
     } else if ( url.indexOf("getVersion") > -1 ){
         console.log( "Returning uid info" );
         response.end( JSON.stringify( { receiverId: "fake-receiver-yo"} ) );
+    } else if ( url.indexOf("remote/processKey") > -1 ){
+        console.log("remote keypress detected");
+        var query = url.substring(url.indexOf("?"));
+        if(!query){
+            console.warn("bad request, missing query");
+            return;
+        }
+        query = query.substring(1); //get rid of question mark
+        var args = getUrlArgs(query);
+        if(args && args.key){
+            switch (args.key){
+                case "up":
+                    incrementChannel();
+                    response.end(JSON.stringify( {
+                        "hold": "keyPress", //this is not technically correct
+                        "key": args.key,
+                        "status": {
+                            "code": 200,
+                            "msg": "OK",
+                            "query": url
+                        }
+                    } ));
+                    break;
+                case "down":
+                    decrementChannel();
+                    response.end(JSON.stringify( {
+                        "hold": "keyPress", //this is not technically correct
+                        "key": args.key,
+                        "status": {
+                            "code": 200,
+                            "msg": "OK",
+                            "query": url
+                        }
+                    } ));
+                    break;
+                default:
+                    console.warn("bad keypress query (only 'up' and 'down' supported)");
+                    response.writeHead( 400, 'Invalid KeyPress', { 'content-type': 'text/plain' } );
+                    response.end("Invalid Keypress (only 'up' and 'down' supported)");
+            }
+        }
+        else {
+            response.writeHead( 400, 'Missing Query', { 'content-type': 'text/plain' } );
+            response.end("Missing Query");
+        }
     } else {
         response.writeHead( 400, 'No such route', { 'content-type': 'text/plain' } );
         response.end("Bad route, homie!");
@@ -107,6 +152,16 @@ function getChannelInfo(){
     return channelInfo[channelIdx];
 }
 
+function incrementChannel(){
+    channelIdx = (channelIdx + 1) % channelInfo.length;
+    console.log('changed channel up'.green);
+}
+
+function decrementChannel(){
+    channelIdx = (channelIdx - 1) < 0 ? channelInfo.length - 1 : channelIdx - 1;
+    console.log('changed channel down'.green);
+}
+
 var channelInfo = [
     { callsign: "ESPNHD", major: 206, minor: 65535, programId: 36417953, stationId: 2220255, title: "Yoga Caliente" },
     { callsign: "CNNHD", major: 202, minor: 65535, programId: 36417952, stationId: 2220225, title: "News & Stuff" },
@@ -114,6 +169,14 @@ var channelInfo = [
     { callsign: "FOX", major: 2, minor: 65535, programId: 3647953, stationId: 20255, title: "FOXy Show" }
     ];
 
+function getUrlArgs(query) {
+    var result = {};
+    query.split("&").forEach(function(part) {
+        var item = part.split("=");
+        result[item[0]] = decodeURIComponent(item[1]);
+    });
+    return result;
+}
 
 // make `process.stdin` begin emitting "keypress" events
 keypress(process.stdin);
@@ -126,12 +189,10 @@ process.stdin.on('keypress', function (ch, key) {
     if(key && key.name) {
         switch (key.name) {
             case 'up':
-                channelIdx = (channelIdx + 1) % channelInfo.length;
-                console.log('changed channel up'.green);
+                incrementChannel();
                 break;
             case 'down':
-                channelIdx = (channelIdx - 1) < 0 ? channelInfo.length - 1 : channelIdx - 1;
-                console.log('changed channel down'.green);
+                decrementChannel();
                 break;
             default:
                 process.stdout.write(String(key.sequence));
