@@ -169,6 +169,8 @@ var channelInfo = [
     { callsign: "FOX", major: 2, minor: 65535, programId: 3647953, stationId: 20255, title: "FOXy Show" }
     ];
 
+
+
 function getUrlArgs(query) {
     var result = {};
     query.split("&").forEach(function(part) {
@@ -202,3 +204,68 @@ process.stdin.on('keypress', function (ch, key) {
 
 process.stdin.setRawMode(true);
 process.stdin.resume();
+
+var TVMEDIA_BASE_URL = "http://api.tvmedia.ca/tv/v4/";
+var TVMEDIA_API_KEY = "api_key=761cbd1955e14ff1b1af8d677a488904";
+
+//coords taken for Campbell, CA
+var latitude = 37.2872;
+var longitude = 121.9500;
+
+http.get(TVMEDIA_BASE_URL + "lineups/geo?latitude=" + latitude
+    + "&longitude=" + longitude + "&detail=brief&" + TVMEDIA_API_KEY, function(response) {
+
+    var res = '';
+
+    response.on('data', function (chunk) {
+        res += chunk;
+    });
+
+    response.on('end', function () {
+        var resObj = JSON.parse(res);
+        if(resObj){
+            resObj.forEach(function(lineup){
+                var name = lineup.lineupName.toLowerCase();
+                if(name.indexOf("directv") > -1){
+                    console.log("Found DirecTV: " + lineup.lineupName + " _ " + lineup.lineupID);
+                    channelInfo = getGridForLineupID(lineup.lineupID);
+                    console.log(channelInfo);
+                }
+            })
+        }
+    });
+});
+
+function getGridForLineupID(lineupId){
+    var grid = [];
+    
+    var startTime = new Date().toISOString();
+    var url = TVMEDIA_BASE_URL + "lineups/" + lineupId + "/listings/grid?" + "start="+startTime+"&"+TVMEDIA_API_KEY;
+    http.get(url, function(response){
+        var res = '';
+
+        response.on('data', function(chunk){
+            res += chunk;
+        })
+
+        response.on('end', function(){
+            var resObj = JSON.parse(res);
+            resObj.forEach(function(lineup){
+                var toPush = {
+                    callsign: lineup.channel.callsign,
+                    major: lineup.channel.channelNumber,
+                    minor: lineup.channel.subChannelNumber,
+                    programId: undefined,
+                    stationId: lineup.channel.stationID,
+                    title: undefined
+                };
+                if(lineup.listings && lineup.listings[0]){
+                    toPush.title = lineup.listings[0].showName;
+                    toPush.programId = lineup.listings[0].showID;
+                }
+                grid.push(toPush);
+            })
+        })
+    });
+    return grid;
+}
