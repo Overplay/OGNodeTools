@@ -102,7 +102,7 @@ httpserver.listen( PORT, function () {
 
 var channelIdx = 0;
 var lastChange = new Date().getTime();
-var changeEvery = 30;
+var changeEvery = 120;
 
 function getChannelInfo(){
     var now = new Date().getTime();
