@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "colors": "^1.1.2",
+    "keypress": "^0.2.1",
+    "lodash": "^4.17.4",
     "node-ssdp": "*"
-    }
+  }
 }
