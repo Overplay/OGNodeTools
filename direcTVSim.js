@@ -8,6 +8,7 @@
 var os = require( 'os' );
 var colors = require( 'colors' );
 var keypress = require('keypress');
+var _ = require('lodash');
 
 var myIp = getIPAddresses()[ 0 ];  // brittle, but whatever
 var VERBOSE = true;
@@ -89,6 +90,13 @@ var httpserver = http.createServer( function ( request, response ) {
     } else if ( url.indexOf("getVersion") > -1 ){
         console.log( "Returning uid info" );
         response.end( JSON.stringify( { receiverId: "fake-receiver-yo"} ) );
+    }  else if ( url.indexOf("tune") > -1 ){
+        console.log( "Returning tune info" );
+
+        var channel = parseInt(url.substring(url.indexOf("=") + 1));
+        channelIdx = _.findIndex(channelInfo, {major: channel});
+
+        response.end( JSON.stringify( { returnVal: "returning 200"} ) );
     } else {
         response.writeHead( 400, 'No such route', { 'content-type': 'text/plain' } );
         response.end("Bad route, homie!");
@@ -139,5 +147,5 @@ process.stdin.on('keypress', function (ch, key) {
     }
 });
 
-process.stdin.setRawMode(true);
-process.stdin.resume();
+// process.stdin.setRawMode(true);
+// process.stdin.resume();
