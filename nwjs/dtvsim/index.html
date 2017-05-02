@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="dtvSimApp">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>DIRECTV SIMULATOR</title>
+    <script src="node_modules/angular/angular.min.js"></script>
+    <script src="app/dtvsim.module.js"></script>
+    <script src="app/service/simulator.service.js"></script>
+    <script src="app/tvscreen/tvscreen.controller.js"></script>
 </head>
-<body>
-
+<body ng-controller="tvScreenController">
+<video src="assets/video/gswfinaltrim.mp4"/>
 </body>
 </html>

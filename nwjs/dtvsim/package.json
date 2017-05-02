@@ -1,4 +1,23 @@
 {
-  "name": "application-name",
-  "version": "0.0.1"
+  "main": "index.html",
+  "name": "nwjs-dtvsim",
+  "description": "directvsim with video",
+  "version": "0.1.0",
+  "window": {
+    "title": "DirecTV Simulator",
+    "icon": "link.png",
+    "toolbar": true,
+    "frame": true,
+    "width": 800,
+    "height": 500
+  },
+  "webkit": {
+    "plugin": true
+  },
+  "dependencies": {
+    "angular": "^1.6.2",
+    "colors": "^1.1.2",
+    "keypress": "^0.2.1",
+    "node-ssdp": "*"
+  }
 }
